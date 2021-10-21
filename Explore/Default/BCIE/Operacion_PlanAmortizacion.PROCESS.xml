@@ -1,0 +1,307 @@
+<aetgt:getResponse xmlns:aetgt="http://schemas.active-endpoints.com/appmodules/repository/2010/10/avrepository.xsd"
+                   xmlns:types1="http://schemas.active-endpoints.com/appmodules/repository/2010/10/avrepository.xsd">
+   <types1:Item>
+      <types1:EntryId>83fWdvSzYLnzYLn-gt-5643669-2020-12-11T13:36:58.953Z::pd.xml</types1:EntryId>
+      <types1:Name>Operacion_PlanAmortizacion</types1:Name>
+      <types1:MimeType>application/xml+process</types1:MimeType>
+      <types1:Description/>
+      <types1:AppliesTo/>
+      <types1:Tags/>
+      <types1:VersionLabel>1.0</types1:VersionLabel>
+      <types1:State>CURRENT</types1:State>
+      <types1:ProcessGroup/>
+      <types1:CreatedBy>mdominguezm</types1:CreatedBy>
+      <types1:CreationDate>2020-12-11T13:36:59Z</types1:CreationDate>
+      <types1:ModifiedBy>mdominguezm</types1:ModifiedBy>
+      <types1:ModificationDate>2020-12-11T14:14:11Z</types1:ModificationDate>
+      <types1:PublicationStatus>published</types1:PublicationStatus>
+      <types1:PublishedBy>mdominguezm</types1:PublishedBy>
+      <types1:PublicationDate>2020-12-11T14:14:18Z</types1:PublicationDate>
+      <types1:PublishedContributionId>project:/spi.Operacion_PlanAmortizacion/Operacion_PlanAmortizacion.pd.xml</types1:PublishedContributionId>
+      <types1:AutosaveExists>false</types1:AutosaveExists>
+      <types1:Entry>
+         <process xmlns="http://schemas.active-endpoints.com/appmodules/screenflow/2010/10/avosScreenflow.xsd"
+                  xmlns:list="urn:activevos:spi:list:functions"
+                  displayName="Operacion_PlanAmortizacion"
+                  name="Operacion_PlanAmortizacion"
+                  overrideAPIName="false">
+            <appliesTo/>
+            <description/>
+            <tags/>
+            <generator>Informatica Process Designer 11</generator>
+            <input>
+               <parameter description="" name="In_Cliente" required="true" type="string">
+                  <options>
+                     <option name="required">false</option>
+                  </options>
+               </parameter>
+               <parameter description=""
+                          name="In_Operacion"
+                          required="true"
+                          type="string">
+                  <options>
+                     <option name="required">false</option>
+                  </options>
+               </parameter>
+               <parameter description="" name="In_LineaCredito" type="string">
+                  <options>
+                     <option name="required">false</option>
+                  </options>
+               </parameter>
+            </input>
+            <output>
+               <field description="" name="Out_Message" type="string">
+                  <options>
+                     <option name="required">false</option>
+                  </options>
+               </field>
+               <field description=""
+                      name="Out_OperacionPlanAmortizacion"
+                      type="objectlist">
+                  <options>
+                     <option name="referenceTo">$po:OperacionPlanAmortizacion</option>
+                     <option hide="true" name="multiSelect">true</option>
+                     <option name="required">false</option>
+                     <option name="isCopy">true</option>
+                     <option name="guid">7ZSYH1GYiLLc27SmghqgEu</option>
+                  </options>
+               </field>
+            </output>
+            <notes/>
+            <deployment suspendOnFault="false" tracingLevel="normal">
+               <rest>
+                  <allowedUsers>
+                     <user>mdominguezm</user>
+                     <user>poc.bcie</user>
+                  </allowedUsers>
+               </rest>
+            </deployment>
+            <flow id="a">
+               <start id="b">
+                  <link id="kikbehqi" targetId="kikbehqh"/>
+               </start>
+               <container id="kikbehqh" type="exclusive">
+                  <title>In_LineaCredito</title>
+                  <flow id="kikbehql">
+                     <eventContainer id="kikbehrc">
+                        <service id="kikbehrh">
+                           <title>ExecuteDBSQLStatement Sin Linea Credito</title>
+                           <serviceName>DataAccessForSQLMSQLServer2016Svc</serviceName>
+                           <serviceGUID/>
+                           <serviceInput>
+                              <parameter name="SQLStatement" source="formula">
+                                 <expression language="XQuery">"SELECT id_operacion AS ID_OPERACION
+,contrato_core AS CONTRATO_CORE
+,contrato_linea AS CONTRATO_LINEA
+,numero_linea_credito AS NUMERO_LINEA_CREDITO
+,bhq_cliente AS BHQ_CLIENTE
+,nombre_cliente AS NOMBRE_CLIENTE
+,componente AS COMPONENTE
+,desc_componente AS DESC_COMPONENTE
+,fecha_a_pagar AS FECHA_A_PAGAR
+,monto_a_pagar AS MONTO_A_PAGAR
+,monto_pagado AS MONTO_PAGADO
+,moneda_pago AS MONTO_PAGO
+,es_pago_cuota AS ES_PAGO_CUOTA
+,monto_total_capital_pagado AS MONTO_TOTAL_CAPITAL_PAGADO
+,mora_principal AS MORA_PRINCIPAL
+,convert(date,convert(varchar(10),fecha_proximo_pago,120)) AS FECHA_PROXIMO_PAGO
+,sum(CASE WHEN fecha_proximo_pago = fecha_a_pagar THEN monto_a_pagar ELSE null END) over(partition by contrato_linea) AS monto_proximo_pago
+,fecha_proximo_vencimiento
+,sum(CASE WHEN fecha_a_pagar = convert(varchar(8),fecha_proximo_vencimiento,112) THEN  monto_a_pagar ELSE null END) over(partition by contrato_linea) AS monto_proximo_vencimiento
+FROM
+(
+SELECT datos.*
+,min(CASE WHEN datos.es_pago_cuota='No' THEN datos.fecha_a_pagar ELSE null END) over (partition by datos.contrato_linea) AS fecha_proximo_pago
+,sum(CASE WHEN datos.es_pago_cuota ='No' 
+AND datos.componente = 'Principal' AND datos.fecha_a_pagar &lt; convert(varchar,getdate(),112) THEN
+datos.monto_a_pagar ELSE 0 END) over (partition by datos.contrato_linea) AS mora_principal
+,min( CASE WHEN fecha_a_pagar &gt;= convert(varchar,getdate(),112) THEN convert(date,convert(varchar(10),fecha_a_pagar,120)) ELSE null END) over (partition by contrato_linea) AS fecha_proximo_vencimiento
+FROM (
+SELECT 
+c.id_operacion
+,a.id_numero_contrato AS contrato_core
+,dce.vinculado_a AS contrato_linea
+,b.numero_linea_credito
+,b.id_dim_cliente
+,d.id_cliente_fc AS bhq_cliente
+,d.nombre_cliente_fc AS nombre_cliente
+,a.componente
+,CASE WHEN a.componente like '%LD%INTMOR%' THEN 'Mora' WHEN a.componente like '%LD%INT' THEN 'Interes' ELSE 'Principal' END AS desc_componente
+,a.fecha_vencimiento AS fecha_a_pagar
+,a.monto_a_pagar
+,a.moneda_amt_pago AS moneda_pago
+,a.monto_colocado AS monto_pagado
+,CASE WHEN round(sum(monto_a_pagar) over (partition by dce.vinculado_a,a.fecha_vencimiento),0) - round(sum(monto_colocado) over (partition by dce.vinculado_a,a.fecha_vencimiento),0) = 0 THEN 'Si' ELSE 'No' END es_pago_cuota
+,sum(CASE WHEN a.componente='PRINCIPAL' THEN a.monto_colocado ELSE 0 END ) over (partition by dce.vinculado_a) AS monto_total_capital_pagado
+FROM SIEG_ODS.[ODS].[act_plan_pagos_ld_mk] a
+LEFT JOIN sieg.[DWH].[dim_contrato_enlace] dce 
+ON ( dce.id_numero_contrato = a.id_numero_contrato AND dce.version_actual=1)
+INNER JOIN sieg.DWH.dim_linea_credito b 
+ON (dce.vinculado_a = b.numero_contrato_core AND b.version_actual = 1)
+LEFT JOIN sieg.dwh.dim_operacion c 
+ON (c.id_dim_operacion = b.id_dim_operacion AND c.version_actual = 1)
+LEFT JOIN sieg.dwh.dim_cliente d 
+ON (d.id_dim_cliente = b.id_dim_cliente AND d.version_actual = 1 AND (record_stat_fc = 'O' OR record_stat_fc = 'N/A' ))
+WHERE 
+d.id_cliente_fc = '" || $input.In_Cliente || "'
+AND c.id_operacion = '" || $input.In_Operacion || "'
+) datos
+) monto_proximo_pago
+order by monto_proximo_pago.fecha_a_pagar"
+</expression>
+                              </parameter>
+                           </serviceInput>
+                        </service>
+                        <flow id="kikbehrd">
+                           <assignment id="kikbehre">
+                              <title>Assignment to Successful Sin Linea Credito Output</title>
+                              <operation source="formula" to="output.Out_Message">
+                                 <expression language="XQuery">'Successful operation'</expression>
+                              </operation>
+                              <operation source="formula" to="output.Out_OperacionPlanAmortizacion">
+                                 <expression language="XQuery">$output.Response</expression>
+                              </operation>
+                           </assignment>
+                           <link id="kikbehrk" targetId="kikbehrc" type="containerLink"/>
+                        </flow>
+                        <flow id="kikbehrf">
+                           <assignment id="kikbehrg">
+                              <title>Assignment to Unsuccessful Sin Linea Credito Output</title>
+                              <operation source="formula" to="output.Out_Message">
+                                 <expression language="XQuery">'Unsuccessful operation: ' || $output.faultInfo[1]/detail</expression>
+                              </operation>
+                           </assignment>
+                           <link id="kikbehrl" targetId="kikbehrc" type="containerLink"/>
+                        </flow>
+                        <link id="kikbehri" targetId="kikbehrd" type="containerLink"/>
+                        <events>
+                           <catch faultField="faultInfo" id="kidzpl6v" interrupting="true">
+                              <link id="kikbehrj" targetId="kikbehrf" type="containerLink"/>
+                           </catch>
+                        </events>
+                     </eventContainer>
+                     <link id="kikbehqm" targetId="kikbehqh" type="containerLink"/>
+                  </flow>
+                  <flow id="kikbehqo">
+                     <eventContainer id="kikbehsm">
+                        <service id="kikbehsr">
+                           <title>ExecuteDBSQLStatement Con Linea Credito</title>
+                           <serviceName>DataAccessForSQLMSQLServer2016Svc</serviceName>
+                           <serviceGUID/>
+                           <serviceInput>
+                              <parameter name="SQLStatement" source="formula">
+                                 <expression language="XQuery">"SELECT id_operacion AS ID_OPERACION
+,contrato_core AS CONTRATO_CORE
+,contrato_linea AS CONTRATO_LINEA
+,numero_linea_credito AS NUMERO_LINEA_CREDITO
+,bhq_cliente AS BHQ_CLIENTE
+,nombre_cliente AS NOMBRE_CLIENTE
+,componente AS COMPONENTE
+,desc_componente AS DESC_COMPONENTE
+,fecha_a_pagar AS FECHA_A_PAGAR
+,monto_a_pagar AS MONTO_A_PAGAR
+,monto_pagado AS MONTO_PAGADO
+,moneda_pago AS MONTO_PAGO
+,es_pago_cuota AS ES_PAGO_CUOTA
+,monto_total_capital_pagado AS MONTO_TOTAL_CAPITAL_PAGADO
+,mora_principal AS MORA_PRINCIPAL
+,convert(date,convert(varchar(10),fecha_proximo_pago,120)) AS FECHA_PROXIMO_PAGO
+,sum(CASE WHEN fecha_proximo_pago = fecha_a_pagar THEN monto_a_pagar ELSE null END) over(partition by contrato_linea) AS monto_proximo_pago
+,fecha_proximo_vencimiento
+,sum(CASE WHEN fecha_a_pagar = convert(varchar(8),fecha_proximo_vencimiento,112) THEN  monto_a_pagar ELSE null END) over(partition by contrato_linea) AS monto_proximo_vencimiento
+FROM
+(
+SELECT datos.*
+,min(CASE WHEN datos.es_pago_cuota='No' THEN datos.fecha_a_pagar ELSE null END) over (partition by datos.contrato_linea) AS fecha_proximo_pago
+,sum(CASE WHEN datos.es_pago_cuota ='No' 
+AND datos.componente = 'Principal' AND datos.fecha_a_pagar &lt; convert(varchar,getdate(),112) THEN
+datos.monto_a_pagar ELSE 0 END) over (partition by datos.contrato_linea) AS mora_principal
+,min( CASE WHEN fecha_a_pagar &gt;= convert(varchar,getdate(),112) THEN convert(date,convert(varchar(10),fecha_a_pagar,120)) ELSE null END) over (partition by contrato_linea) AS fecha_proximo_vencimiento
+FROM (
+SELECT 
+c.id_operacion
+,a.id_numero_contrato AS contrato_core
+,dce.vinculado_a AS contrato_linea
+,b.numero_linea_credito
+,b.id_dim_cliente
+,d.id_cliente_fc AS bhq_cliente
+,d.nombre_cliente_fc AS nombre_cliente
+,a.componente
+,CASE WHEN a.componente like '%LD%INTMOR%' THEN 'Mora' WHEN a.componente like '%LD%INT' THEN 'Interes' ELSE 'Principal' END AS desc_componente
+,a.fecha_vencimiento AS fecha_a_pagar
+,a.monto_a_pagar
+,a.moneda_amt_pago AS moneda_pago
+,a.monto_colocado AS monto_pagado
+,CASE WHEN round(sum(monto_a_pagar) over (partition by dce.vinculado_a,a.fecha_vencimiento),0) - round(sum(monto_colocado) over (partition by dce.vinculado_a,a.fecha_vencimiento),0) = 0 THEN 'Si' ELSE 'No' END es_pago_cuota
+,sum(CASE WHEN a.componente='PRINCIPAL' THEN a.monto_colocado ELSE 0 END ) over (partition by dce.vinculado_a) AS monto_total_capital_pagado
+FROM SIEG_ODS.[ODS].[act_plan_pagos_ld_mk] a
+LEFT JOIN sieg.[DWH].[dim_contrato_enlace] dce 
+ON ( dce.id_numero_contrato = a.id_numero_contrato AND dce.version_actual=1)
+INNER JOIN sieg.DWH.dim_linea_credito b 
+ON (dce.vinculado_a = b.numero_contrato_core AND b.version_actual = 1)
+LEFT JOIN sieg.dwh.dim_operacion c 
+ON (c.id_dim_operacion = b.id_dim_operacion AND c.version_actual = 1)
+LEFT JOIN sieg.dwh.dim_cliente d 
+ON (d.id_dim_cliente = b.id_dim_cliente AND d.version_actual = 1 AND (record_stat_fc = 'O' OR record_stat_fc = 'N/A' ))
+WHERE 
+d.id_cliente_fc = '" || $input.In_Cliente || "'
+AND c.id_operacion = '" || $input.In_Operacion || "'
+AND b.numero_linea_credito = '" || $input.In_LineaCredito || "'
+) datos
+) monto_proximo_pago
+order by monto_proximo_pago.fecha_a_pagar"
+</expression>
+                              </parameter>
+                           </serviceInput>
+                        </service>
+                        <flow id="kikbehsn">
+                           <assignment id="kikbehso">
+                              <title>Assignment to Successful Con Linea Credito Output</title>
+                              <operation source="formula" to="output.Out_Message">
+                                 <expression language="XQuery">'Successful operation'</expression>
+                              </operation>
+                              <operation source="formula" to="output.Out_OperacionPlanAmortizacion">
+                                 <expression language="XQuery">$output.Response</expression>
+                              </operation>
+                           </assignment>
+                           <link id="kikbehsu" targetId="kikbehsm" type="containerLink"/>
+                        </flow>
+                        <flow id="kikbehsp">
+                           <assignment id="kikbehsq">
+                              <title>Assignment to Unsuccessful Sin Linea Credito Output</title>
+                              <operation source="formula" to="output.Out_Message">
+                                 <expression language="XQuery">'Unsuccessful operation: ' || $output.faultInfo[1]/detail</expression>
+                              </operation>
+                           </assignment>
+                           <link id="kikbehsv" targetId="kikbehsm" type="containerLink"/>
+                        </flow>
+                        <link id="kikbehss" targetId="kikbehsn" type="containerLink"/>
+                        <events>
+                           <catch faultField="faultInfo" id="kidzpl6v" interrupting="true">
+                              <link id="kikbehst" targetId="kikbehsp" type="containerLink"/>
+                           </catch>
+                        </events>
+                     </eventContainer>
+                     <link id="kikbehqp" targetId="kikbehqh" type="containerLink"/>
+                  </flow>
+                  <link id="kikbehqk" targetId="kikbehql" type="containerLink">
+                     <condition source="formula">
+                        <function name="string-equals">
+                           <arg name="left">{$input.In_LineaCredito}</arg>
+                           <arg name="right"/>
+                        </function>
+                     </condition>
+                  </link>
+                  <link id="kikbehr9" targetId="c"/>
+                  <link id="kikbehqn" targetId="kikbehqo" type="containerLink"/>
+               </container>
+               <end id="c"/>
+            </flow>
+         </process>
+      </types1:Entry>
+      <types1:GUID>dUvn7eisFGthLIbCTSvWCG</types1:GUID>
+      <types1:DisplayName>Operacion_PlanAmortizacion</types1:DisplayName>
+   </types1:Item>
+   <types1:CurrentServerDateTime>2021-10-21T20:22:59.967Z</types1:CurrentServerDateTime>
+</aetgt:getResponse>
