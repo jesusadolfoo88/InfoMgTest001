@@ -1,0 +1,174 @@
+<aetgt:getResponse xmlns:aetgt="http://schemas.active-endpoints.com/appmodules/repository/2010/10/avrepository.xsd"
+                   xmlns:types1="http://schemas.active-endpoints.com/appmodules/repository/2010/10/avrepository.xsd">
+   <types1:Item>
+      <types1:EntryId>OVuslqAOclkZ2sB-gt-53589726-2021-09-09T19:32:58.646Z::pd.xml</types1:EntryId>
+      <types1:Name>InsertListToDatabase</types1:Name>
+      <types1:MimeType>application/xml+process</types1:MimeType>
+      <types1:Description>Uses Oracle11G. inserts list of records to a database table Students.
+
+{
+    "StudentPO" : [
+        {
+            "StudName":"value1",
+            "StudDept":"value2"
+        },
+        {
+            "StudName":"value3", 
+            "StudDept":"value4"
+        }
+    ]
+}</types1:Description>
+      <types1:AppliesTo/>
+      <types1:Tags>.anonymous</types1:Tags>
+      <types1:VersionLabel>1.0</types1:VersionLabel>
+      <types1:State>CURRENT</types1:State>
+      <types1:ProcessGroup/>
+      <types1:CreatedBy>jzamora@infomg.mx</types1:CreatedBy>
+      <types1:CreationDate>2021-09-09T19:32:59Z</types1:CreationDate>
+      <types1:ModifiedBy/>
+      <types1:PublicationStatus>unpublished</types1:PublicationStatus>
+      <types1:AutosaveExists>false</types1:AutosaveExists>
+      <types1:Entry>
+         <process xmlns="http://schemas.active-endpoints.com/appmodules/screenflow/2010/10/avosScreenflow.xsd"
+                  xmlns:list="urn:activevos:spi:list:functions"
+                  displayName="InsertListToDatabase"
+                  name="InsertListToDatabase">
+            <appliesTo/>
+            <description>Uses Oracle11G. inserts list of records to a database table Students.
+
+{
+    "StudentPO" : [
+        {
+            "StudName":"value1",
+            "StudDept":"value2"
+        },
+        {
+            "StudName":"value3", 
+            "StudDept":"value4"
+        }
+    ]
+}</description>
+            <tags>.anonymous</tags>
+            <generator>Informatica Process Designer 9</generator>
+            <input>
+               <parameter description="" name="StudentList" type="objectlist">
+                  <options>
+                     <option name="referenceTo">$po:StudentPO</option>
+                     <option hide="true" name="multiSelect">true</option>
+                     <option name="required">false</option>
+                     <option name="isCopy">true</option>
+                     <option name="guid">1QKrFKozCsdfhrCeS6rUyc</option>
+                  </options>
+               </parameter>
+            </input>
+            <output>
+               <field description="" name="Result" type="string">
+                  <options>
+                     <option name="required">false</option>
+                  </options>
+               </field>
+            </output>
+            <tempFields>
+               <field description="" name="StudPO" type="reference">
+                  <options>
+                     <option name="referenceTo">$po:StudentPO</option>
+                     <option name="required">false</option>
+                     <option name="isCopy">true</option>
+                     <option name="guid">1QKrFKozCsdfhrCeS6rUyc</option>
+                  </options>
+               </field>
+            </tempFields>
+            <notes/>
+            <deployment suspendOnFault="false" tracingLevel="verbose">
+               <rest>
+                  <allowAnonymousAccess/>
+                  <wholePayload inputWholePayload="true"/>
+               </rest>
+            </deployment>
+            <flow id="a">
+               <start id="b">
+                  <link id="jj4a92cy" targetId="jj4a92cx"/>
+               </start>
+               <container id="jj4a92cx" type="exclusive">
+                  <title>StudentList</title>
+                  <flow id="jj4a92d1">
+                     <assignment id="jj4a92ge">
+                        <title>Assignment to StudPO</title>
+                        <operation source="formula" to="temp.StudPO">
+                           <expression language="XQuery">list:head($input.StudentList)</expression>
+                        </operation>
+                        <link id="jj4a92gk" targetId="jj4my1kv"/>
+                     </assignment>
+                     <assignment id="jj4a92gr">
+                        <title>Assignment to StudentList</title>
+                        <operation source="formula" to="input.StudentList">
+                           <expression language="XQuery">list:remove($input.StudentList , 1)</expression>
+                        </operation>
+                        <link id="jj4a92h2" targetId="jj4a92h0"/>
+                     </assignment>
+                     <eventContainer id="jj4my1kv">
+                        <create id="jj4a92gj">
+                           <title>STUDENTS</title>
+                           <entityName>Oracle11G:STUDENTS</entityName>
+                           <createInput>
+                              <parameter name="STUDENTNAME" source="field" updatable="true">temp.StudPO[1]/StudName</parameter>
+                              <parameter name="STUDENTDEPT" source="field" updatable="true">temp.StudPO[1]/StudDept</parameter>
+                           </createInput>
+                        </create>
+                        <flow id="jj4my1kx">
+                           <link id="jj4my1ky" targetId="jj4my1kv" type="containerLink"/>
+                        </flow>
+                        <flow id="jj4my1l0">
+                           <assignment id="jj4my1lf">
+                              <title>Assignment to Result incase of faults</title>
+                              <operation source="formula" to="output.Result">
+                                 <expression language="XQuery">concat('DB exception', $output.faultInfo[1]/detail )</expression>
+                              </operation>
+                           </assignment>
+                           <link id="jj4my1l1" targetId="jj4my1kv" type="containerLink"/>
+                        </flow>
+                        <link id="jj4my1kw" targetId="jj4my1kx" type="containerLink"/>
+                        <link id="jj4a92gs" targetId="jj4a92gr"/>
+                        <events>
+                           <catch faultField="faultInfo" id="jj4my1ks" interrupting="true">
+                              <link id="jj4my1kz" targetId="jj4my1l0" type="containerLink"/>
+                           </catch>
+                        </events>
+                     </eventContainer>
+                     <jumpTo id="jj4a92h0">
+                        <link id="jj4a92h1" targetId="jj4a92cx"/>
+                     </jumpTo>
+                  </flow>
+                  <flow id="jj4a92d4">
+                     <assignment id="jj4my1l7">
+                        <title>Assignment to Final result</title>
+                        <operation source="constant" to="output.Result">Done</operation>
+                        <link id="jj4my1le" targetId="jj4a92fw"/>
+                     </assignment>
+                     <end id="jj4a92fw">
+                        <title>End</title>
+                     </end>
+                  </flow>
+                  <link id="jj4a92d0" targetId="jj4a92d1" type="containerLink">
+                     <condition source="formula">
+                        <function name="not-empty">
+                           <arg name="field">{$input.StudentList}</arg>
+                        </function>
+                     </condition>
+                  </link>
+                  <link id="jj4a92d3" targetId="jj4a92d4" type="containerLink">
+                     <condition source="formula">
+                        <function name="empty">
+                           <arg name="field">{$input.StudentList}</arg>
+                        </function>
+                     </condition>
+                  </link>
+               </container>
+            </flow>
+         </process>
+      </types1:Entry>
+      <types1:GUID>5jkAsermFysdWxGZFepzYW</types1:GUID>
+      <types1:DisplayName>InsertListToDatabase</types1:DisplayName>
+   </types1:Item>
+   <types1:CurrentServerDateTime>2021-10-21T18:08:31.022Z</types1:CurrentServerDateTime>
+</aetgt:getResponse>

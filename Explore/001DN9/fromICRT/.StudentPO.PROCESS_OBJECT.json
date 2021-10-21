@@ -1,0 +1,24 @@
+{
+  "objectInfo" : {
+    "id" : "1QKrFKozCsdfhrCeS6rUyc",
+    "name" : "StudentPO",
+    "type" : "PROCESS_OBJECT",
+    "metadata" : {
+      "modelVersion" : {
+        "major" : 1,
+        "minor" : 0
+      },
+      "repoInfo" : {
+        "repoHandle" : "zziSypmXbeMVX3c-gt-107601459-2021-09-09T19:32:58.417Z::po.xml"
+      },
+      "contextAttributes" : null,
+      "additionalInfo" : {
+        "description" : "",
+        "contentType" : "application/json; charset=utf-8",
+        "documentState" : "VALID"
+      }
+    }
+  },
+  "dataFileExtension" : "xml",
+  "objectRefs" : [ ]
+}
